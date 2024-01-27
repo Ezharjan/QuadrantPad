@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四象限时间管理记事本 by Alexander</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .quadrant {
+            background-color: lightgreen;
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #quadrant1 {
+            top: 0;
+            left: 50%;
+        }
+
+        #quadrant2 {
+            bottom: 0;
+            left: 50%;
+        }
+
+        #quadrant3 {
+            top: 0;
+            right: 50%;
+        }
+
+        #quadrant4 {
+            bottom: 0;
+            right: 50%;
+        }
+
+        .line {
+            position: absolute;
+            background-color: #000;
+        }
+
+        .horizontal-line {
+            width: 100%;
+            height: 1px;
+        }
+
+        .vertical-line {
+            width: 1px;
+            height: 100%;
+        }
+
+        .notes {
+            width: calc(100% - 50px);
+            /* 调整宽度 */
+            padding: 10px;
+            margin: 25px 10px;
+            /* 有少量的 margin */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            word-wrap: break-word;
+            min-height: 30px;
+            outline: none;
+            overflow: auto;
+            flex-grow: 1;
+        }
+
+        .quadrant-name {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            pointer-events: none;
+            /* 让名称不可编辑 */
+        }
+
+        .quadrant-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            width: 100px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .note {
+            padding: 10px;
+        }
+
+        .new-note::before {
+            content: '● ';
+            /* 用圆圈标记新条目 */
+        }
+
+        .first-note::before {
+            content: '● ';
+            /* 用圆圈标记新条目 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quadrant" id="quadrant1">
+        <div class="quadrant-label" style="top: 0; right: 0; color: red;">紧急且重要</div>
+        <div class="notes" id="notes1" contenteditable="true">
+            <div class="note first-note" contenteditable="true"></div>
+        </div>
+    </div>
+    <div class="quadrant" id="quadrant2">
+        <div class="quadrant-label" style="bottom: 0; right: 0; color:black;">紧急不重要</div>
+        <div class="notes" id="notes2" contenteditable="true">
+            <div class="note first-note" contenteditable="true"></div>
+        </div>
+    </div>
+    <div class="quadrant" id="quadrant3">
+        <div class="quadrant-label" style="top: 0; left: 0; color: rgb(129, 45, 0);">重要不紧急</div>
+        <div class="notes" id="notes3" contenteditable="true">
+            <div class="note first-note" contenteditable="true"></div>
+        </div>
+    </div>
+    <div class="quadrant" id="quadrant4">
+        <div class="quadrant-label" style="bottom: 0; left: 0; color: gray;">不重要不紧急</div>
+        <div class="notes" id="notes4" contenteditable="true">
+            <div class="note first-note" contenteditable="true"></div>
+        </div>
+    </div>
+    <div class="line horizontal-line" style="top: 50%;"></div>
+    <div class="line vertical-line" style="left: 50%;"></div>
+
+    <script>
+        // Retrieve notes from localStorage if available
+        const notes1 = localStorage.getItem('notes1') || '';
+        const notes2 = localStorage.getItem('notes2') || '';
+        const notes3 = localStorage.getItem('notes3') || '';
+        const notes4 = localStorage.getItem('notes4') || '';
+
+        // Display notes in respective quadrants if not empty
+        if (notes1.trim() !== '') document.getElementById('notes1').innerHTML = notes1;
+        if (notes2.trim() !== '') document.getElementById('notes2').innerHTML = notes2;
+        if (notes3.trim() !== '') document.getElementById('notes3').innerHTML = notes3;
+        if (notes4.trim() !== '') document.getElementById('notes4').innerHTML = notes4;
+
+        // Save notes to localStorage on input change
+        document.querySelectorAll('.notes').forEach((noteArea, index) => {
+            noteArea.addEventListener('input', () => {
+                localStorage.setItem('notes' + (index + 1), noteArea.innerHTML);
+            });
+
+            // Listen for Enter key press
+            noteArea.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent default behavior (line break)
+                    document.execCommand('insertHTML', false, '<div class="note new-note" contenteditable="true"></div>'); // Insert new content with contenteditable div
+                    const newNote = noteArea.lastElementChild; // Find the newly created note
+                    if (newNote) {
+                        newNote.focus(); // Set focus to the newly created note
+                    }
+                } else if (event.key === 'Backspace' || event.key === 'Delete') {
+                    const selection = window.getSelection(); // Get current selection
+                    const firstNote = noteArea.querySelector('.first-note'); // Find the first note
+                    if (selection.focusNode === firstNote && selection.focusOffset === 0) {
+                        event.preventDefault(); // Prevent deletion if cursor is at the beginning of the first note
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
